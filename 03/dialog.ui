@@ -19,14 +19,19 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QLabel" name="lb_connectionProtocol">
+        <widget class="QLabel" name="label">
+         <property name="font">
+          <font>
+           <pointsize>30</pointsize>
+          </font>
+         </property>
          <property name="text">
-          <string>Протокол подключения к БД</string>
+          <string>Диалоговое окно</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="sb_connectionProtocol"/>
        </item>
       </layout>
      </item>

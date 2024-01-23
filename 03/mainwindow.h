@@ -2,7 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "dialog.h"
+#include "form.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -16,11 +17,8 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-private slots:
-    void on_pb_ok_clicked();
-
 private:
     Ui::MainWindow *ui;
-    Dialog* dialog;
+    Form* form;
 };
 #endif // MAINWINDOW_H
