@@ -1,4 +1,3 @@
-// mainwindow.cpp
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QTime>
@@ -15,18 +14,23 @@ MainWindow::MainWindow(QWidget *parent)
     ui->bt_circle->setText("Круг");
 
     stopwatch = new Stopwatch(this);
-    timer = new QTimer(this);
     lapNumber = 0;
 
     connect(ui->bt_start_stop, &QPushButton::clicked, this, &MainWindow::onStartStopClicked);
     connect(ui->bt_clear, &QPushButton::clicked, this, &MainWindow::onResetClicked);
     connect(ui->bt_circle, &QPushButton::clicked, this, &MainWindow::onLapClicked);
-    connect(timer, &QTimer::timeout, this, &MainWindow::updateTimer);
+    connect(stopwatch, &Stopwatch::timeChanged, this, &MainWindow::updateTime);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete stopwatch;
+}
+
+void MainWindow::updateTime(qint64 time)
+{
+    ui->lb_time->setText(QTime(0, 0).addMSecs(time).toString("hh:mm:ss.zzz"));
 }
 
 void MainWindow::onStartStopClicked()
@@ -34,11 +38,9 @@ void MainWindow::onStartStopClicked()
     if (stopwatch->isRunning()) {
         stopwatch->stop();
         ui->bt_start_stop->setText("Старт");
-        timer->stop();
     } else {
         stopwatch->start();
         ui->bt_start_stop->setText("Стоп");
-        timer->start(100);
     }
 }
 
@@ -53,14 +55,8 @@ void MainWindow::onResetClicked()
 void MainWindow::onLapClicked()
 {
     if (stopwatch->isRunning()) {
-        qint64 lapTime = stopwatch->elapsed();
+        qint64 lapTime = stopwatch->lapTime();
         lapNumber++;
-        ui->br_circle->append(QString("Круг %1, время: %2 сек").arg(lapNumber).arg(QTime::fromMSecsSinceStartOfDay(lapTime).toString("hh:mm:ss.zzz")));
+        ui->br_circle->append(QString("Круг %1, время: %2 сек").arg(lapNumber).arg(QTime(0, 0).addMSecs(lapTime).toString("hh:mm:ss.zzz")));
     }
-}
-
-void MainWindow::updateTimer()
-{
-    qint64 time = stopwatch->elapsed();
-    ui->lb_time->setText(QTime::fromMSecsSinceStartOfDay(time).toString("hh:mm:ss.zzz"));
 }
