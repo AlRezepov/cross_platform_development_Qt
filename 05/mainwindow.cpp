@@ -9,7 +9,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     ui->bt_start_stop->setText("Старт");
-    ui->bt_clear->setText("Cброс");
+    ui->bt_clear->setText("Очистить");
     ui->lb_time->setText("00:00:00.0");
     ui->bt_circle->setText("Круг");
 
@@ -38,9 +38,11 @@ void MainWindow::onStartStopClicked()
     if (stopwatch->isRunning()) {
         stopwatch->stop();
         ui->bt_start_stop->setText("Старт");
+        ui->bt_circle->setEnabled(false);
     } else {
         stopwatch->start();
         ui->bt_start_stop->setText("Стоп");
+        ui->bt_circle->setEnabled(true);
     }
 }
 
@@ -50,12 +52,20 @@ void MainWindow::onResetClicked()
     ui->lb_time->setText("00:00:00.0");
     ui->br_circle->clear();
     lapNumber = 0;
+    ui->bt_circle->setEnabled(false);
 }
 
 void MainWindow::onLapClicked()
 {
     if (stopwatch->isRunning()) {
-        qint64 lapTime = stopwatch->lapTime();
+        qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+        qint64 lapTime;
+        if (lapNumber == 0) {
+            lapTime = currentTime - stopwatch->getStartTime();
+        } else {
+            lapTime = currentTime - lastLapTime;
+        }
+        lastLapTime = currentTime;
         lapNumber++;
         ui->br_circle->append(QString("Круг %1, время: %2 сек").arg(lapNumber).arg(QTime(0, 0).addMSecs(lapTime).toString("hh:mm:ss.zzz")));
     }

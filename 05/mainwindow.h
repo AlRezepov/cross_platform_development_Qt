@@ -26,6 +26,7 @@ private:
     Ui::MainWindow *ui;
     Stopwatch *stopwatch;
     int lapNumber;
+    qint64 lastLapTime;
 };
 
 #endif // MAINWINDOW_H

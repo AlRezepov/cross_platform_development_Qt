@@ -15,13 +15,10 @@ public:
     void reset();
     bool isRunning();
     qint64 elapsed();
-    qint64 lapTime();
+    qint64 getStartTime();
 
 signals:
     void timeChanged(qint64 time);
-
-public slots:
-    void lap();
 
 private slots:
     void updateTimer();
@@ -31,6 +28,7 @@ private:
     qint64 lastLapTime;
     bool running;
     QTimer timer;
+    qint64 lastStopTime;
 };
 
 #endif // STOPWATCH_H

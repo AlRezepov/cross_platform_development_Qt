@@ -1,7 +1,7 @@
 #include "stopwatch.h"
 #include <QDateTime>
 
-Stopwatch::Stopwatch(QObject *parent) : QObject(parent), running(false), lastLapTime(0)
+Stopwatch::Stopwatch(QObject *parent) : QObject(parent), running(false), lastStopTime(0)
 {
     connect(&timer, &QTimer::timeout, this, &Stopwatch::updateTimer);
 }
@@ -10,10 +10,11 @@ void Stopwatch::start()
 {
     if (!running)
     {
-        if (lastLapTime == 0) {
+        if (lastStopTime == 0) {
             startTime = QDateTime::currentMSecsSinceEpoch();
         } else {
-            startTime = QDateTime::currentMSecsSinceEpoch() - lastLapTime;
+            qint64 elapsedSinceLastStop = QDateTime::currentMSecsSinceEpoch() - lastStopTime;
+            startTime += elapsedSinceLastStop;
         }
         running = true;
         timer.start(100);
@@ -26,13 +27,14 @@ void Stopwatch::stop()
     {
         running = false;
         timer.stop();
+        lastStopTime = QDateTime::currentMSecsSinceEpoch();
     }
 }
 
 void Stopwatch::reset()
 {
     startTime = 0;
-    lastLapTime = 0;
+    lastStopTime = 0;
     running = false;
     timer.stop();
 }
@@ -50,22 +52,7 @@ qint64 Stopwatch::elapsed()
     }
     else
     {
-        return lastLapTime;
-    }
-}
-
-qint64 Stopwatch::lapTime()
-{
-    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
-    return currentTime - startTime;
-}
-
-void Stopwatch::lap()
-{
-    if (running)
-    {
-        lastLapTime = QDateTime::currentMSecsSinceEpoch() - startTime;
-        emit timeChanged(lastLapTime);
+        return lastStopTime - startTime;
     }
 }
 
@@ -76,3 +63,9 @@ void Stopwatch::updateTimer()
         emit timeChanged(elapsed());
     }
 }
+
+qint64 Stopwatch::getStartTime()
+{
+    return startTime;
+}
+
