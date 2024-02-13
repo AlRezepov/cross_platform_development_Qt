@@ -80,7 +80,7 @@ void MainWindow::StartRace()
 {
     if(ui->rb_qtConcur->isChecked()) {
 
-        ui->te_debug->append("Выполни ДЗ!");
+        ui->te_debug->append("ДЗ Выполнено!");
 
         QFuture<void> future1 = QtConcurrent::run([this]() { concurRace1->DoWork(&number, ui->rb_mutexOn->isChecked(), ui->sb_initNum->value()); });
         future1.waitForFinished();
