@@ -8,13 +8,57 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->pb_clearResult->setCheckable(true);
+
+    chartWindow = new QMainWindow(this);
+    chart = new QChart();
+    series = new QLineSeries();
+    chartView = new QChartView(chart);
+    axisX = new QValueAxis();
+    axisY = new QValueAxis();
+
+    // Подключаем сигнал dataReadyForChart к слоту displayChart
     connect(this, &MainWindow::dataReadyForChart, this, &MainWindow::displayChart);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete series;
+    delete chart;
+    delete axisX;
+    delete axisY;
+    delete chartView;
+    delete chartWindow;
 }
+
+void MainWindow::displayChart(QVector<double> data)
+{
+
+    chartWindow->setWindowTitle("График данных");
+
+    // Установите данные для серии
+    for (int i = 0; i < data.size(); ++i) {
+        series->append(i, data[i]);
+    }
+
+    // Добавиление осей на виджет графика
+    chartView->chart()->addAxis(axisX, Qt::AlignBottom);
+    chartView->chart()->addAxis(axisY, Qt::AlignLeft);
+
+    // Привязка данных к осям
+    chartView->chart()->addSeries(series);
+    series->attachAxis(axisX);
+    series->attachAxis(axisY);
+
+    axisX->setTitleText("Время, мс");
+    axisY->setTitleText("Значение");
+
+    // Установка графика в виджет и его отображение
+    chartWindow->setCentralWidget(chartView);
+    chartWindow->resize(800, 600);
+    chartWindow->show();
+}
+
 
 
 
@@ -163,40 +207,6 @@ void MainWindow::DisplayResult(QVector<double> mins, QVector<double> maxs)
 
     ui->te_Result->append("Первый максимум " + QString::number(maxs.first()));
     ui->te_Result->append("Второй максимум " + QString::number(maxs.at(1)));
-}
-
-void MainWindow::displayChart(QVector<double> data)
-{
-    // Создаем новое окно для отображения графика
-    QMainWindow *chartWindow = new QMainWindow(this);
-    chartWindow->setWindowTitle("График данных");
-
-    // Создаем объект графика и добавляем на него серию данных
-    QChart *chart = new QChart();
-    QLineSeries *series = new QLineSeries();
-    for(double value : data)
-    {
-        series->append(series->count(), value);
-    }
-    chart->addSeries(series);
-
-    // Настраиваем оси
-    QValueAxis *axisX = new QValueAxis();
-    axisX->setTitleText("Время, мс");
-    chart->addAxis(axisX, Qt::AlignBottom);
-    series->attachAxis(axisX);
-
-    QValueAxis *axisY = new QValueAxis();
-    axisY->setTitleText("Значение");
-    chart->addAxis(axisY, Qt::AlignLeft);
-    series->attachAxis(axisY);
-
-    // Создаем виджет для отображения графика и добавляем его в окно
-    QChartView *chartView = new QChartView(chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
-    chartWindow->setCentralWidget(chartView);
-
-    chartWindow->show();
 }
 
 /****************************************************/

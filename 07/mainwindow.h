@@ -51,6 +51,13 @@ private:
     QVector<uint32_t> readData;
     QVector<double> procesData;
     QVector<double> mins, maxs;
+
+    QMainWindow *chartWindow;
+    QChart *chart;
+    QLineSeries *series;
+    QValueAxis *axisX;
+    QValueAxis *axisY;
+    QChartView *chartView;
 };
 
 #endif // MAINWINDOW_H
