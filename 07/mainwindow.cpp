@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QtCharts>
+#include <algorithm>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -11,10 +12,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     chartWindow = new QMainWindow(this);
     chart = new QChart();
-    series = new QLineSeries();
     chartView = new QChartView(chart);
     axisX = new QValueAxis();
     axisY = new QValueAxis();
+
+    // Инициализация осей
+    axisX->setTitleText("Время, мс");
+    axisY->setTitleText("Значение");
+
+    // Добавление осей на виджет графика
+    chartView->chart()->addAxis(axisX, Qt::AlignBottom);
+    chartView->chart()->addAxis(axisY, Qt::AlignLeft);
 
     // Подключаем сигнал dataReadyForChart к слоту displayChart
     connect(this, &MainWindow::dataReadyForChart, this, &MainWindow::displayChart);
@@ -23,42 +31,52 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
-    delete series;
-    delete chart;
-    delete axisX;
-    delete axisY;
     delete chartView;
     delete chartWindow;
 }
 
 void MainWindow::displayChart(QVector<double> data)
 {
-
     chartWindow->setWindowTitle("График данных");
 
-    // Установите данные для серии
-    for (int i = 0; i < data.size(); ++i) {
-        series->append(i, data[i]);
+    // Проверяем наличие серий в графике
+    if (!chart->series().isEmpty()) {
+        // Удаляем все текущие серии из графика и освобождаем память
+        foreach (QAbstractSeries *series, chart->series()) {
+            chart->removeSeries(series);
+            delete series;
+        }
     }
 
-    // Добавиление осей на виджет графика
-    chartView->chart()->addAxis(axisX, Qt::AlignBottom);
-    chartView->chart()->addAxis(axisY, Qt::AlignLeft);
+    // Создаем новую серию для данных
+    QLineSeries *newSeries = new QLineSeries();
 
-    // Привязка данных к осям
-    chartView->chart()->addSeries(series);
-    series->attachAxis(axisX);
-    series->attachAxis(axisY);
+    // Устанавливаем данные для новой серии
+    for (int i = 0; i < data.size(); ++i) {
+        newSeries->append(i, data[i]);
+    }
 
-    axisX->setTitleText("Время, мс");
-    axisY->setTitleText("Значение");
+    // Привязка новой серии к осям
+    chartView->chart()->addSeries(newSeries);
+    newSeries->attachAxis(axisX);
+    newSeries->attachAxis(axisY);
+
+    // Устанавливаем текущую серию в окне графика
+    chartView->setChart(chartView->chart());
+
+    // Помечаем новую серию для удаления при следующем вызове displayChart()
+    QObject::connect(chartView, &QChartView::destroyed, newSeries, &QObject::deleteLater);
+
+    // Масштабирование оси Y
+    double maxElem = *std::max_element(data.begin(), data.end());
+    double minElem = *std::min_element(data.begin(), data.end());
+    axisY->setRange(minElem, maxElem);
 
     // Установка графика в виджет и его отображение
     chartWindow->setCentralWidget(chartView);
     chartWindow->resize(800, 600);
     chartWindow->show();
 }
-
 
 
 
